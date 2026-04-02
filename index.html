@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadPro Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #00ff88;
+    --accent2: #0088ff;
+    --danger: #ff4444;
+    --warn: #ffaa00;
+    --text: #e8e8f0;
+    --muted: #6666aa;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* ─── LOGIN ─── */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 0%, #001a0d 0%, var(--bg) 70%);
+  }
+
+  .login-box {
+    width: 360px;
+    padding: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .login-logo {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .login-logo span { color: var(--accent); }
+
+  .login-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 32px;
+    font-family: var(--mono);
+  }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    width: 100%;
+    justify-content: center;
+    font-size: 15px;
+    padding: 12px;
+  }
+  .btn-primary:hover { opacity: .85; }
+
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-success { background: var(--accent); color: #000; }
+  .btn-blue { background: var(--accent2); color: #fff; }
+
+  #login-error { color: var(--danger); font-size: 13px; font-family: var(--mono); margin-top: 10px; display: none; }
+
+  /* ─── MAIN APP ─── */
+  #app { display: none; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo span { color: var(--accent); }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,255,136,.05); }
+
+  .nav-icon { font-size: 16px; }
+
+  .sidebar-bottom { margin-top: auto; padding: 20px; }
+  .logout-btn { color: var(--muted); font-size: 13px; cursor: pointer; font-family: var(--mono); }
+  .logout-btn:hover { color: var(--danger); }
+
+  /* Main content */
+  .main { flex: 1; overflow: auto; }
+  .page { display: none; padding: 32px; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+  .page-sub { color: var(--muted); font-size: 13px; font-family: var(--mono); margin-top: 4px; }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.green::after { background: var(--accent); }
+  .stat-card.blue::after { background: var(--accent2); }
+  .stat-card.warn::after { background: var(--warn); }
+  .stat-card.danger::after { background: var(--danger); }
+
+  .stat-label { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .stat-value { font-size: 36px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+  .stat-card.green .stat-value { color: var(--accent); }
+  .stat-card.blue .stat-value { color: var(--accent2); }
+  .stat-card.warn .stat-value { color: var(--warn); }
+  .stat-card.danger .stat-value { color: var(--danger); }
+
+  /* Table */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-title { font-size: 15px; font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 13px 20px; font-size: 13px; border-bottom: 1px solid rgba(42,42,58,.5); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 500;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+  .badge-active { background: rgba(0,255,136,.15); color: var(--accent); }
+  .badge-inactive { background: rgba(255,68,68,.15); color: var(--danger); }
+  .badge-basic { background: rgba(102,102,170,.15); color: var(--muted); }
+  .badge-pro { background: rgba(0,136,255,.15); color: var(--accent2); }
+  .badge-enterprise { background: rgba(255,170,0,.15); color: var(--warn); }
+
+  .key-cell { font-family: var(--mono); font-size: 11px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .key-cell:hover { color: var(--accent); }
+
+  /* Toggle switch */
+  .toggle {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--border);
+    border-radius: 20px;
+    transition: .2s;
+  }
+  .slider:before {
+    content: '';
+    position: absolute;
+    height: 14px; width: 14px;
+    left: 3px; bottom: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: .2s;
+  }
+  input:checked + .slider { background: rgba(0,255,136,.3); }
+  input:checked + .slider:before { transform: translateX(16px); background: var(--accent); }
+
+  /* Progress bar */
+  .progress { background: var(--border); border-radius: 4px; height: 4px; margin-top: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .3s; }
+  .progress-fill.warn { background: var(--warn); }
+  .progress-fill.danger { background: var(--danger); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 480px;
+    max-width: 95vw;
+    padding: 32px;
+    position: relative;
+  }
+  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  .modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+  .modal-close:hover { color: var(--text); }
+
+  .modal .field { margin-bottom: 14px; }
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+  }
+  select:focus { border-color: var(--accent); }
+
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* Activity log */
+  .log-row td:first-child { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .25s;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  .actions-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .search-bar {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    width: 220px;
+  }
+  .search-bar:focus { border-color: var(--accent); }
+
+  .new-key-display {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    word-break: break-all;
+    margin-top: 12px;
+    display: none;
+  }
+  .new-key-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Lead<span>Pro</span></div>
+    <div class="login-sub">// admin dashboard</div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">Access Dashboard →</button>
+    <div id="login-error">Wrong password. Try again.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-logo">Lead<span>Pro</span></div>
+      <div class="nav-item active" onclick="showPage('overview')">
+        <span class="nav-icon">◈</span> Overview
+      </div>
+      <div class="nav-item" onclick="showPage('users')">
+        <span class="nav-icon">◎</span> Users & Keys
+      </div>
+      <div class="nav-item" onclick="showPage('activity')">
+        <span class="nav-icon">◉</span> Activity Log
+      </div>
+      <div class="sidebar-bottom">
+        <div class="logout-btn" onclick="logout()">⊗ logout</div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+      <!-- OVERVIEW PAGE -->
+      <div class="page active" id="page-overview">
+        <div class="page-header">
+          <div class="page-title">Overview</div>
+          <div class="page-sub">// real-time stats</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card green">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="stat-total">—</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Active Keys</div>
+            <div class="stat-value" id="stat-active">—</div>
+          </div>
+          <div class="stat-card warn">
+            <div class="stat-label">Total Scrapes</div>
+            <div class="stat-value" id="stat-scrapes">—</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-label">Today</div>
+            <div class="stat-value" id="stat-today">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Activity</div>
+            <button class="btn btn-sm btn-ghost" onclick="loadStats()">↻ Refresh</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Query</th>
+                <th>Location</th>
+                <th>Results</th>
+              </tr>
+            </thead>
+            <tbody id="activity-preview"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- USERS PAGE -->
+      <div class="page" id="page-users">
+        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div class="page-title">Users & Keys</div>
+            <div class="page-sub">// manage access</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input class="search-bar" placeholder="Search name or email..." oninput="filterUsers(this.value)" id="user-search">
+            <button class="btn btn-success btn-sm" onclick="openModal()">+ New User</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Plan</th>
+                <th>API Key</th>
+                <th>Usage</th>
+                <th>Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ACTIVITY PAGE -->
+      <div class="page" id="page-activity">
+        <div class="page-header">
+          <div class="page-title">Activity Log</div>
+          <div class="page-sub">// all scrape requests</div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Query</th>
+                <th>Location</th>
+                <th>Results</th>
+              </tr>
+            </thead>
+            <tbody id="activity-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- NEW USER MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Add New User</div>
+
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" id="new-name" placeholder="John Smith">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="new-email" placeholder="john@example.com">
+    </div>
+    <div class="field">
+      <label>Plan</label>
+      <select id="new-plan">
+        <option value="basic">Basic</option>
+        <option value="pro">Pro</option>
+        <option value="enterprise">Enterprise</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Scrape Limit</label>
+      <input type="number" id="new-limit" value="500" min="1">
+    </div>
+    <div class="field">
+      <label>Notes (optional)</label>
+      <textarea id="new-notes" placeholder="Payment info, WhatsApp number, etc."></textarea>
+    </div>
+
+    <div class="new-key-label" id="key-result-label" style="display:none">Generated API Key — copy and send to user:</div>
+    <div class="new-key-display" id="key-result"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-success btn-sm" onclick="createUser()">Create User & Generate Key</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let TOKEN = localStorage.getItem('lp_admin_token') || '';
+let allUsers = [];
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('password-input').value;
+  const r = await fetch('/admin/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({password: pw})
+  });
+  const d = await r.json();
+  if (d.token) {
+    TOKEN = d.token;
+    localStorage.setItem('lp_admin_token', TOKEN);
+    showApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  TOKEN = '';
+  localStorage.removeItem('lp_admin_token');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadStats();
+  loadUsers();
+}
+
+// Try auto-login if token exists
+if (TOKEN) {
+  fetch('/admin/api/stats', {headers: {'X-Admin-Token': TOKEN}})
+    .then(r => r.ok ? showApp() : null)
+    .catch(() => {});
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'activity') loadActivity();
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const r = await apiFetch('/admin/api/stats');
+  if (!r) return;
+  document.getElementById('stat-total').textContent = r.total_users;
+  document.getElementById('stat-active').textContent = r.active_users;
+  document.getElementById('stat-scrapes').textContent = r.total_scrapes.toLocaleString();
+  document.getElementById('stat-today').textContent = r.today_scrapes;
+
+  const tbody = document.getElementById('activity-preview');
+  tbody.innerHTML = r.recent_logs.slice(0,8).map(l => `
+    <tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${fmtTime(l.timestamp)}</td>
+      <td>${l.name || '<span style="color:var(--muted)">unknown</span>'}</td>
+      <td>${l.query}</td>
+      <td>${l.location}</td>
+      <td><span style="color:var(--accent);font-family:var(--mono)">${l.results_count}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  const users = await apiFetch('/admin/api/users');
+  if (!users) return;
+  allUsers = users;
+  renderUsers(users);
+}
+
+function filterUsers(q) {
+  const filtered = allUsers.filter(u =>
+    u.name.toLowerCase().includes(q.toLowerCase()) ||
+    u.email.toLowerCase().includes(q.toLowerCase())
+  );
+  renderUsers(filtered);
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-table');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No users yet. Create your first one!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => {
+    const pct = Math.round((u.scrapes_used / u.scrapes_limit) * 100);
+    const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : '';
+    return `
+    <tr>
+      <td>
+        <div style="font-weight:600">${u.name}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">${u.email}</div>
+      </td>
+      <td><span class="badge badge-${u.plan}">${u.plan}</span></td>
+      <td>
+        <div class="key-cell" title="Click to copy" onclick="copyKey('${u.api_key}')">${u.api_key}</div>
+      </td>
+      <td style="min-width:120px">
+        <div style="font-family:var(--mono);font-size:12px">${u.scrapes_used} / ${u.scrapes_limit}</div>
+        <div class="progress"><div class="progress-fill ${barClass}" style="width:${pct}%"></div></div>
+      </td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${u.active ? 'checked' : ''} onchange="toggleUser(${u.id}, this.checked)">
+          <span class="slider"></span>
+        </label>
+      </td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn btn-sm btn-ghost" onclick="resetKey(${u.id}, '${u.name}')">↻ New Key</button>
+          <button class="btn btn-sm btn-ghost" onclick="editLimit(${u.id}, ${u.scrapes_limit}, '${u.name}')">Limit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id}, '${u.name}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleUser(id, active) {
+  await apiFetch(`/admin/api/users/${id}`, 'PATCH', {active: active ? 1 : 0});
+  toast(active ? '✓ User enabled' : '⊗ User disabled');
+  loadUsers();
+}
+
+async function resetKey(id, name) {
+  if (!confirm(`Generate a new API key for ${name}? Their old key will stop working immediately.`)) return;
+  const r = await apiFetch(`/admin/api/users/${id}/reset-key`, 'POST');
+  if (r?.api_key) {
+    navigator.clipboard.writeText(r.api_key).catch(() => {});
+    toast('✓ New key copied: ' + r.api_key.slice(0, 20) + '...');
+    loadUsers();
+  }
+}
+
+async function editLimit(id, current, name) {
+  const val = prompt(`New scrape limit for ${name}:`, current);
+  if (!val || isNaN(val)) return;
+  await apiFetch(`/admin/api/users/${id}`, 'PATCH', {scrapes_limit: parseInt(val)});
+  toast('✓ Limit updated');
+  loadUsers();
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+  await apiFetch(`/admin/api/users/${id}`, 'DELETE');
+  toast('✓ User deleted');
+  loadUsers();
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('key-result').style.display = 'none';
+  document.getElementById('key-result-label').style.display = 'none';
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-email').value = '';
+  document.getElementById('new-limit').value = 500;
+  document.getElementById('new-notes').value = '';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  loadUsers();
+}
+
+async function createUser() {
+  const data = {
+    name: document.getElementById('new-name').value.trim(),
+    email: document.getElementById('new-email').value.trim(),
+    plan: document.getElementById('new-plan').value,
+    scrapes_limit: parseInt(document.getElementById('new-limit').value),
+    notes: document.getElementById('new-notes').value
+  };
+  if (!data.name || !data.email) return toast('⚠ Name and email required');
+
+  const r = await apiFetch('/admin/api/users', 'POST', data);
+  if (r?.api_key) {
+    document.getElementById('key-result').textContent = r.api_key;
+    document.getElementById('key-result').style.display = 'block';
+    document.getElementById('key-result-label').style.display = 'block';
+    navigator.clipboard.writeText(r.api_key).catch(() => {});
+    toast('✓ User created! Key copied to clipboard');
+  } else if (r?.error) {
+    toast('⚠ ' + r.error);
+  }
+}
+
+// ─── ACTIVITY ─────────────────────────────────────────────────────────────────
+async function loadActivity() {
+  const r = await apiFetch('/admin/api/stats');
+  if (!r) return;
+  const tbody = document.getElementById('activity-table');
+  tbody.innerHTML = r.recent_logs.map(l => `
+    <tr class="log-row">
+      <td>${fmtTime(l.timestamp)}</td>
+      <td>${l.name || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${l.query}</td>
+      <td>${l.location}</td>
+      <td><span style="color:var(--accent);font-family:var(--mono)">${l.results_count}</span></td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">No activity yet</td></tr>';
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+async function apiFetch(url, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: {'Content-Type':'application/json', 'X-Admin-Token': TOKEN}
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const r = await fetch(url, opts);
+    return await r.json();
+  } catch(e) {
+    toast('⚠ Network error');
+    return null;
+  }
+}
+
+function copyKey(key) {
+  navigator.clipboard.writeText(key).then(() => toast('✓ Key copied!'));
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function fmtTime(ts) {
+  if (!ts) return '—';
+  return new Date(ts + 'Z').toLocaleString('en-US', {
+    month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+</script>
+</body>
+</html>
